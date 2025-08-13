@@ -1,11 +1,12 @@
 const CACHE_NAME = 'senha-nexxo-cache-v1';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  '.',
+  'index.html',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png'
 ];
+
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -20,3 +21,4 @@ self.addEventListener('fetch', event => {
       .then(response => response || fetch(event.request))
   );
 });
+
