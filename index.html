@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gerador de Senha Nexxo</title>
+  
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007bff" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      background: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Gerador de Senha Nexxo</h2>
+
+  <label for="dia">Dia</label>
+  <input type="number" id="dia" value="24" min="1" max="31" />
+
+  <label for="mes">Mês</label>
+  <input type="number" id="mes" value="7" min="1" max="12" />
+
+  <label for="ano">Ano (2 dígitos)</label>
+  <input type="number" id="ano" value="25" min="0" max="99" />
+
+  <label for="cliente">Número do Cliente (8 dígitos)</label>
+  <input type="hidden" id="cliente" value="00008422" maxlength="8" pattern="[0-9]{8}" />
+
+  <button onclick="gerarSenha()">Gerar Senha</button>
+
+  <div id="resultado"></div>
+
+  <script>
+  window.onload = function() {
+    const hoje = new Date();
+    let dia = hoje.getDate();
+    let mes = hoje.getMonth() + 1; // meses começam em 0
+    let ano = hoje.getFullYear() % 100; // dois últimos dígitos do ano
+
+    document.getElementById("dia").value = dia;
+    document.getElementById("mes").value = mes;
+    document.getElementById("ano").value = ano.toString().padStart(2, '0');
+  }
+
+  function toBCD(num) {
+    return ((Math.floor(num / 10) << 4) | (num % 10));
+  }
+
+  function gerarSenha() {
+    const dia = parseInt(document.getElementById("dia").value);
+    const mes = parseInt(document.getElementById("mes").value);
+    const ano = document.getElementById("ano").value.padStart(2, '0');
+    const cliente = document.getElementById("cliente").value.padStart(8, '0');
+
+    const num = (toBCD(dia) << 8) | toBCD(mes);
+    const num2 = (0x20 << 8) | toBCD(parseInt(ano)); // "20" fixo
+    const num3 = 1;
+    const num11 = 27881;
+
+    const num4 = (
+      ((cliente.charCodeAt(0) - 48) << 12) |
+      ((cliente.charCodeAt(1) - 48) << 8) |
+      ((cliente.charCodeAt(2) - 48) << 4) |
+      (cliente.charCodeAt(3) - 48)
+    );
+
+    const num5 = (
+      ((cliente.charCodeAt(4) - 48) << 12) |
+      ((cliente.charCodeAt(5) - 48) << 8) |
+      ((cliente.charCodeAt(6) - 48) << 4) |
+      (cliente.charCodeAt(7) - 48)
+    );
+
+    let senha = num ^ num2 ^ num3 ^ num11 ^ num4 ^ num5;
+
+    if (senha === 2358 || senha === 2222) {
+      senha += 1;
+    }
+
+    const senhaFormatada = senha.toString().padStart(5, '0');
+
+    document.getElementById("resultado").innerText = "Senha: " + senhaFormatada;
+  }
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.error('Erro no Service Worker:', err));
+    }
+  </script>
+
+</body>
+</html>
